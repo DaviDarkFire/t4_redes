@@ -11,6 +11,7 @@
 #define BUFFSIZE 1024
 #define MAX_IFNAME_LEN	6
 #define LISTEN_ENQ 5
+#define LOOPBACK_IP "127.0.0.1"
 
 #define XARP_SHOW 0
 #define XARP_RES 1

@@ -328,7 +328,7 @@ int main(int argc, char** argv) {
 
 	int listen_sockfd = create_socket(AF_INET, SOCK_STREAM, 0);
 
-	load_socket_info(&serv_addr, INADDR_ANY, PORT);
+	load_socket_info(&serv_addr, LOOPBACK_IP, PORT);
 	my_bind(listen_sockfd, (struct sockaddr*) &serv_addr);
 	my_listen(listen_sockfd, LISTEN_ENQ);
 
