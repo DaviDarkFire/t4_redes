@@ -189,6 +189,87 @@ void * decrease_ttl_every_sec(void* arg){
 	}
 }
 
+void xarp_show(FILE* fp, node_t** head) {
+	print_list(*head, fp);
+}
+
+void xarp_res(FILE* fp, unsigned char* request) {
+	unsigned int ip_address = (request[4] << 24) | (request[3] << 16) | (request[2] << 8) | (request[1]);
+	node_t* found_node = find_node_by_ip_address(*head, ip_address);
+
+	if(found_node != NULL){
+		fprintf(fp, "(%d.%d.%d.%d, %02x:%02x:%02x:%02x:%02x:%02x, %u)",
+		request[4], request[3], request[2], request[1],
+		found_node->eth_address[0], found_node->eth_address[1],
+		found_node->eth_address[2], found_node->eth_address[3],
+		found_node->eth_address[4], found_node->eth_address[5],
+		found_node->ttl);
+	} else {
+		unsigned char* dd_ip = malloc(sizeof(char)*16);
+		sprintf(dd_ip, "%d.%d.%d.%d", request[4], request[3], request[2], request[1]);
+		send_arp_request(my_ifaces[0].ifname, dd_ip);
+
+		struct timespec ts;
+		if (clock_gettime(CLOCK_REALTIME, &ts) == -1){
+			printf("Error at clock_gettime.\n");
+		}
+		ts.tv_sec += 3;
+		int res = sem_timedwait(&sem, &ts);
+		if (res == -1){
+			if (errno == ETIMEDOUT)
+				fprintf(fp, "Endereço IP desconhecido.\n");
+			else
+				perror("sem_timedwait unexpected error.\n");
+		}
+	}
+
+}
+
+void xarp_add(FILE* fp, node_t** head, unsigned char* request) {
+	unsigned int ip_address = (request[4] << 24) | (request[3] << 16) | (request[2] << 8) | (request[1]);
+	unsigned char eth_address[6];
+	memcpy(eth_address, request+1+4, 6); // 1B for opcode, 4B for ip address, 6B for eth_address
+	int ttl = (request[14] << 24) | (request[13] << 16) | (request[12] << 8) | (request[11]);
+	node_t* found_node = find_node_by_ip_address(*head, ip_address);
+
+	if(found_node == NULL){
+		fprintf(fp, "Node not found, adding new node\n");
+		add_node(head, ip_address, eth_address, ttl);
+	} else {
+		fprintf(fp, "Node found, modifying node\n");
+		found_node->ip_address = ip_address;
+		memcpy(found_node->eth_address, eth_address, 6);
+		found_node->ttl = (ttl == -1 ? global_ttl : ttl);
+	}
+	fprintf(fp, "Successfull add.\n");
+}
+
+void xarp_del(FILE* fp, node_t** head, unsigned char* request) {
+	unsigned int ip_address = (request[4] << 24) | (request[3] << 16) | (request[2] << 8) | (request[1]);
+	if(delete_node_by_ip_address(head, ip_address) == 1)
+		fprintf(fp, "Node deleted succesfully.\n");
+	else
+		fprintf(fp, "Couldn't delete node.\n");
+}
+
+void xarp_ttl(FILE* fp, unsigned char* request) {
+	int ttl = (request[4] << 24) | (request[3] << 16) | (request[2] << 8) | (request[1]);
+	global_ttl = ttl;
+	fprintf(fp, "New default TTL is: %d\n", global_ttl);
+}
+
+void xifconfig_info(FILE* fp, int sockfd, unsigned int qt_ifaces) {
+	unsigned int i;
+	for(i = 0; i < qt_ifaces; i++){
+		print_iface_info(sockfd, fp, i);
+	}
+}
+
+void xifconfig_mtu(unsigned char* request) {
+	char* ifname = request+1;
+	update_mtu(ifname);
+}
+
 void daemon_handle_request(unsigned char* request, int sockfd, node_t** head, unsigned int qt_ifaces){
 	int opcode = request[0] - '0';
 	FILE * fp = fdopen(sockfd, "w");
@@ -196,103 +277,42 @@ void daemon_handle_request(unsigned char* request, int sockfd, node_t** head, un
 	switch(opcode){
 
 		case XARP_SHOW: //DONE
-			print_list(*head, fp);
+			xarp_show(fp, head);
 			break;
 
-		case XARP_RES:{
-			unsigned int ip_address = (request[4] << 24) | (request[3] << 16) | (request[2] << 8) | (request[1]);
-			node_t* found_node = find_node_by_ip_address(*head, ip_address);
-
-			if(found_node != NULL){
-				fprintf(fp, "(%d.%d.%d.%d, %02x:%02x:%02x:%02x:%02x:%02x, %u)",
-				request[4], request[3], request[2], request[1],
-				found_node->eth_address[0], found_node->eth_address[1],
-				found_node->eth_address[2], found_node->eth_address[3],
-				found_node->eth_address[4], found_node->eth_address[5],
-				found_node->ttl);
-			} else {
-				unsigned char* dd_ip = malloc(sizeof(char)*16);
-				sprintf(dd_ip, "%d.%d.%d.%d", request[4], request[3], request[2], request[1]);
-				send_arp_request(my_ifaces[0].ifname, dd_ip);
-
-				struct timespec ts;
-				if (clock_gettime(CLOCK_REALTIME, &ts) == -1){
-					printf("Error at clock_gettime.\n");
-				}
-				ts.tv_sec += 3;
-				int res = sem_timedwait(&sem, &ts);
-				if (res == -1){
-					if (errno == ETIMEDOUT)
-						fprintf(fp, "Endereço IP desconhecido.\n");
-					else
-						perror("sem_timedwait unexpected error.\n");
-				}
-			}
-
+		case XARP_RES:
+			xarp_res(fp, request);
 			break;
-		}
 
-
-		case XARP_ADD:{ //DONE
-			unsigned int ip_address = (request[4] << 24) | (request[3] << 16) | (request[2] << 8) | (request[1]);
-			unsigned char eth_address[6];
-			memcpy(eth_address, request+1+4, 6); // 1B for opcode, 4B for ip address, 6B for eth_address
-			int ttl = (request[14] << 24) | (request[13] << 16) | (request[12] << 8) | (request[11]);
-			node_t* found_node = find_node_by_ip_address(*head, ip_address);
-
-			if(found_node == NULL){
-				fprintf(fp, "Node not found, adding new node\n");
-				add_node(head, ip_address, eth_address, ttl);
-			} else {
-				fprintf(fp, "Node found, modifying node\n");
-				found_node->ip_address = ip_address;
-				memcpy(found_node->eth_address, eth_address, 6);
-				found_node->ttl = (ttl == -1 ? global_ttl : ttl);
-			}
-			fprintf(fp, "Successfull add.\n");
+		case XARP_ADD: //DONE
+			xarp_add(fp, head, request);
 			break;
-		}
 
-		case XARP_DEL:{ //DONE
-			unsigned int ip_address = (request[4] << 24) | (request[3] << 16) | (request[2] << 8) | (request[1]);
-			if(delete_node_by_ip_address(head, ip_address) == 1)
-			  fprintf(fp, "Node deleted succesfully.\n");
-			else
-				fprintf(fp, "Couldn't delete node.\n");
+		case XARP_DEL: //DONE
+			xarp_del(fp, head, request);
 			break;
-		}
 
-		case XARP_TTL:{ //DONE
-			int ttl = (request[4] << 24) | (request[3] << 16) | (request[2] << 8) | (request[1]);
-			global_ttl = ttl;
-			fprintf(fp, "New default TTL is: %d\n", global_ttl);
+		case XARP_TTL: //DONE
+			xarp_ttl(fp, request);
 			break;
-		}
 
-
-		case XIFCONFIG_INFO:{ // DONE
-			unsigned int i;
-			for(i = 0; i < qt_ifaces; i++){
-				print_iface_info(sockfd, fp, i);
-			}
+		case XIFCONFIG_INFO: // DONE
+			xifconfig_info(fp, sockfd, qt_ifaces);
 			break;
-		}
 
-		case XIFCONFIG_IP:{ // Unnecessary?
+		case XIFCONFIG_IP: // Unnecessary?
 			break;
-		}
 
-		case XIFCONFIG_MTU:{ //DONE
-			char* ifname = request+1;
-			update_mtu(ifname);
+		case XIFCONFIG_MTU: //DONE
+			xifconfig_mtu(request);
 			break;
-		}
 
 		default:
 			fprintf(fp, "Daemon couldn't recognize this request.\n");
 	}
 	fclose(fp);
 }
+
 
 int main(int argc, char** argv) {
   int i, sockfd;
