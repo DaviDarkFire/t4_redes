@@ -3,15 +3,27 @@
 #define BYTES_UNTIL_BODY 14
 #define MAX_IFACES	64
 #define MAX_PACKET_SIZE 65536
-#define MIN_PACKET_SIZE 64
+#define MIN_PACKET_SIZE 20
 #define MAX_IFACES	64
 #define MAX_IFNAME_LEN	6
 #define ETH_ADDR_LEN	6
 #define IP_ADDR_LEN 4
 #define BUFFSIZE 1024
 #define MAX_IFNAME_LEN	6
+#define LISTEN_ENQ 5
+
+#define XARP_SHOW 0
+#define XARP_RES 1
+#define XARP_ADD 2
+#define XARP_DEL 3
+#define XARP_TTL 4
+#define XIFCONFIG_INFO 5
+#define XIFCONFIG_IP 6
+#define XIFCONFIG_MTU 7
 
 #include <pthread.h> // pthread_t
+#include <stdio.h>
+#include "linked_list.h"
 
 struct ether_hdr {
 	unsigned char	ether_dhost[6];	// Destination address
@@ -56,14 +68,15 @@ struct ip_hdr {
 };
 
 void print_usage();
-int create_socket();
 void print_error();
-void bind_iface_name(int sockfd, char* iface_name);
 void get_iface_info(int sockfd, char *ifname, struct iface *ifn);
 void iface_pthread_create(pthread_t tid, unsigned int iface_index);
 void* read_iface(void *arg);
 void handle_packet(unsigned char* packet, int len);
 void print_eth_address(char *s, unsigned char *eth_addr);
-void print_iface_info(int sockfd, unsigned int iface_index);
+void print_iface_info(int sockfd, FILE* fp, unsigned int iface_index);
+unsigned int get_iface_index(char* iface_name);
+void daemon_handle_request(unsigned char* request, int sockfd, node_t** head, unsigned int qt_ifaces);
+
 
 #endif
