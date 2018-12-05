@@ -1,30 +1,10 @@
 #ifndef __IPD__
 #define __IPD__
-#define BYTES_UNTIL_BODY 14
-#define MAX_IFACES	64
-#define MAX_PACKET_SIZE 65536
-#define MIN_PACKET_SIZE 20
-#define MAX_IFACES	64
-#define MAX_IFNAME_LEN	6
-#define ETH_ADDR_LEN	6
-#define IP_ADDR_LEN 4
-#define BUFFSIZE 1024
-#define MAX_IFNAME_LEN	6
-#define LISTEN_ENQ 5
-#define LOOPBACK_IP "127.0.0.1"
-
-#define XARP_SHOW 0
-#define XARP_RES 1
-#define XARP_ADD 2
-#define XARP_DEL 3
-#define XARP_TTL 4
-#define XIFCONFIG_INFO 5
-#define XIFCONFIG_IP 6
-#define XIFCONFIG_MTU 7
 
 #include <pthread.h> // pthread_t
 #include <stdio.h>
 #include "linked_list.h"
+#include "global_defines.h"
 
 struct ether_hdr {
 	unsigned char	ether_dhost[6];	// Destination address

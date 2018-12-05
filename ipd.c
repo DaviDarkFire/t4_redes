@@ -1,4 +1,5 @@
 #include "ipd.h"
+#include "global_defines.h"
 #include <errno.h>
 #include <stdio.h>
 #include <pthread.h> // pthread_t
@@ -20,6 +21,7 @@
 #include "arp_protocol.h"
 #include "linked_list.h"
 #include "misc.h"
+#include "ip_linked_list.h"
 
 
 struct iface my_ifaces[MAX_IFACES];
@@ -193,7 +195,7 @@ void xarp_show(FILE* fp, node_t** head) {
 	print_list(*head, fp);
 }
 
-void xarp_res(FILE* fp, unsigned char* request) {
+void xarp_res(FILE* fp, node_t** head,unsigned char* request) {
 	unsigned int ip_address = (request[4] << 24) | (request[3] << 16) | (request[2] << 8) | (request[1]);
 	node_t* found_node = find_node_by_ip_address(*head, ip_address);
 
@@ -281,7 +283,7 @@ void daemon_handle_request(unsigned char* request, int sockfd, node_t** head, un
 			break;
 
 		case XARP_RES:
-			xarp_res(fp, request);
+			xarp_res(fp, head, request);
 			break;
 
 		case XARP_ADD: //DONE
