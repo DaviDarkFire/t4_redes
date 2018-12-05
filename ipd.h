@@ -3,7 +3,7 @@
 
 #include <pthread.h> // pthread_t
 #include <stdio.h>
-#include "linked_list.h"
+#include "arp_linked_list.h"
 #include "global_defines.h"
 
 struct ether_hdr {
