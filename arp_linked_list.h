@@ -22,4 +22,5 @@
   int list_size();
   void get_eth_addr_as_6_bytes_from_string(unsigned char dest_array[6], char* src_str);
   node_t* find_node_by_ip_address(unsigned int desired_ip_addr);
+  void initialize_head();
 #endif

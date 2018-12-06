@@ -114,24 +114,25 @@ void handle_packet(unsigned char* packet, int len) {
 	struct ether_hdr* eth = (struct ether_hdr*) packet;
 
 	if(htons(0x0806) == eth->ether_type) { // ARP
-		int i;
-		arp_hdr *arphdr = (arp_hdr*) (eth + 6 + 6 + 2); // 6B for MAC dst/src, 2B for eth type
-		unsigned int ip_address;
-		unsigned char mac_address[6];
-
-  	for (i=0; i<6; i++) {
-			mac_address[i] = (unsigned char) arphdr->sender_mac[i];
-  	}
-
-		node_t* new_node = add_node(ip_address, mac_address, global_ttl);
-		printf("(%d.%d.%d.%d, %2x:%2x:%2x:%2x:%2x:%2x, %d)",
-		arphdr->sender_ip[0], arphdr->sender_ip[1],
-		arphdr->sender_ip[2], arphdr->sender_ip[3],
-	 	mac_address[0], mac_address[1], mac_address[2],
-		mac_address[3], mac_address[4], mac_address[5],
-		new_node->ttl);
-
-		sem_post(&sem);
+		// TODO: xarp res que recebe pacote ARP
+		// int i;
+		// arp_hdr *arphdr = (arp_hdr*) (eth + 6 + 6 + 2); // 6B for MAC dst/src, 2B for eth type
+		// unsigned int ip_address;
+		// unsigned char mac_address[6];
+		//
+  	// for (i=0; i<6; i++) {
+		// 	mac_address[i] = (unsigned char) arphdr->sender_mac[i];
+  	// }
+		//
+		// node_t* new_node = add_node(ip_address, mac_address, global_ttl);
+		// printf("(%d.%d.%d.%d, %2x:%2x:%2x:%2x:%2x:%2x, %d)",
+		// arphdr->sender_ip[0], arphdr->sender_ip[1],
+		// arphdr->sender_ip[2], arphdr->sender_ip[3],
+	 	// mac_address[0], mac_address[1], mac_address[2],
+		// mac_address[3], mac_address[4], mac_address[5],
+		// new_node->ttl);
+		//
+		// sem_post(&sem);
 	} else {
 		if(htons(0x0800) == eth->ether_type) { // IP
 			struct ip_hdr* ip_header = (struct ip_hdr*) (packet+BYTES_UNTIL_BODY);
@@ -200,7 +201,7 @@ void xarp_res(FILE* fp, node_t** head,unsigned char* request) {
 	node_t* found_node = find_node_by_ip_address(ip_address);
 
 	if(found_node != NULL){
-		fprintf(fp, "(%d.%d.%d.%d, %02x:%02x:%02x:%02x:%02x:%02x, %u)",
+		fprintf(fp, "(%d.%d.%d.%d, %02x:%02x:%02x:%02x:%02x:%02x AOBAAAAA, %u)",
 		request[4], request[3], request[2], request[1],
 		found_node->eth_address[0], found_node->eth_address[1],
 		found_node->eth_address[2], found_node->eth_address[3],

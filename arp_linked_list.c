@@ -4,10 +4,9 @@ node_t* g_head;
 node_t* head;
 
 void initialize_head(){
-
   head = (node_t*) malloc(sizeof(node_t));
-
 }
+
 // adds node to the end of the list
 node_t* add_node(unsigned int ip_address, unsigned char eth_address[6], int ttl){
     node_t* new_node;
