@@ -7,5 +7,7 @@
   void load_socket_info(struct sockaddr_in *serv_addr, const char *ip_address, int port);
   int create_socket(int domain, int type, int protocol);
   void bind_iface_name(int sockfd, char* iface_name);
+  void my_send(int sockfd, char *message, unsigned int message_len);
+  void my_connect(int sockfd, struct sockaddr_in* serv_addr);
   void print_error();
 #endif

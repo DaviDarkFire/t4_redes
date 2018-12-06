@@ -67,6 +67,24 @@ void bind_iface_name(int sockfd, char* iface_name) {
     }
 }
 
+void my_send(int sockfd, char *message, unsigned int message_len) {
+  int bytes_sent = 0;
+  do {
+      bytes_sent += send(sockfd, message+bytes_sent, message_len - bytes_sent, 0);
+      if (bytes_sent < 0) {
+        print_error();
+        exit(1);
+      }
+  } while (bytes_sent < message_len);
+}
+
+void my_connect(int sockfd, struct sockaddr_in* serv_addr) {
+  if(connect(sockfd, (struct sockaddr*) serv_addr, sizeof(*serv_addr)) < 0) {
+		fprintf(stderr, "ERROR: %s\n", strerror(errno));
+		exit(1);
+	}
+}
+
 void print_error(){
 	fprintf(stderr, "%s\n", strerror(errno));
 }
