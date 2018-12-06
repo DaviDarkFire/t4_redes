@@ -1,10 +1,9 @@
 #include "arp_linked_list.h"
 
-node_t* g_head;
-node_t* head;
+node_t* arp_head;
 
-void initialize_head(){
-  head = (node_t*) malloc(sizeof(node_t));
+void initialize_arp_head(){
+  arp_head = (node_t*) malloc(sizeof(node_t));
 }
 
 // adds node to the end of the list
@@ -16,13 +15,12 @@ node_t* add_node(unsigned int ip_address, unsigned char eth_address[6], int ttl)
     new_node->ttl = ttl;
     new_node->next = NULL;
 
-    if (head->next == NULL){
-      head->next = new_node;
-      g_head = new_node;
+    if (arp_head->next == NULL){
+      arp_head->next = new_node;
       return new_node;
-    } // creating the head
+    } // creating the arp_head
 
-    node_t* current = head->next;
+    node_t* current = arp_head->next;
     while(current->next != NULL){
       current = current->next;
     }
@@ -33,18 +31,17 @@ node_t* add_node(unsigned int ip_address, unsigned char eth_address[6], int ttl)
 
 int delete_node_by_ip_address(unsigned int del_ip_addr){
   // int retval = -1;
-  node_t* current = head->next;
+  node_t* current = arp_head->next;
   node_t* previous = NULL;
 
   // no nodes in the list
-  if(head->next == NULL)
+  if(arp_head->next == NULL)
     return -1;
 
-  // deleting head
-  if(del_ip_addr == (head->next)->ip_address){
-    node_t* aux = head->next;
-    head->next = (head->next)->next;
-    g_head = head->next;
+  // deleting arp_head
+  if(del_ip_addr == (arp_head->next)->ip_address){
+    node_t* aux = arp_head->next;
+    arp_head->next = (arp_head->next)->next;
     free(aux);
     return 1;
   }
@@ -64,7 +61,7 @@ int delete_node_by_ip_address(unsigned int del_ip_addr){
 }
 
 void print_list(FILE* fp){
-  node_t * current = head->next;
+  node_t * current = arp_head->next;
   struct in_addr ip_addr;
   int i;
   fprintf(fp ,"Entrada\t\tEndereço IP\t\tEndereço Ethernet\t\tTTL\n");
@@ -81,7 +78,7 @@ void print_list(FILE* fp){
 }
 
 int list_size(){
-    node_t * current = head->next;
+    node_t * current = arp_head->next;
     int i = 0;
     for(i = 0; current != NULL; i++){current = current->next;}
     return  i*(sizeof(node_t)-sizeof(node_t*));
@@ -105,7 +102,7 @@ void get_eth_addr_as_6_bytes_from_string(unsigned char dest_array[6], char* src_
 
 // returns desired node if it exists in the list, otherwise, returns NULL (be careful!)
 node_t* find_node_by_ip_address(unsigned int desired_ip_addr){
-    node_t* current = head->next;
+    node_t* current = arp_head->next;
     while(current != NULL){
       if(current->ip_address == desired_ip_addr)
         return current;

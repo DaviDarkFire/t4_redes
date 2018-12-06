@@ -134,9 +134,12 @@ int main(int argc, char** argv){
 
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_addr.s_addr = inet_addr(DEFAULT_IP);
+  // serv_addr.sin_addr.s_addr = DEFAULT_IP;
 	serv_addr.sin_port = htons(PORT);
+  // serv_addr.sin_port = PORT;
 
 	if(connect(sockfd, (struct sockaddr*) &serv_addr, sizeof(serv_addr)) < 0) {
+    printf("pipoco\n");
 		fprintf(stderr, "ERROR: %s\n", strerror(errno));
 		exit(1);
 	}

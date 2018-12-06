@@ -178,7 +178,7 @@ void print_iface_info(int sockfd, FILE* fp, unsigned int iface_index){
 }
 
 void * decrease_ttl_every_sec(void* arg){
-	node_t* current = g_head;
+	node_t* current = arp_head->next;
 	while(1){
 		while(current != NULL){
 			if(current->ttl != -1)
@@ -187,16 +187,16 @@ void * decrease_ttl_every_sec(void* arg){
 				delete_node_by_ip_address(current->ip_address);
 			current = current->next;
 		}
-		current = g_head;
+		current = arp_head->next;
 		sleep(1);
 	}
 }
 
-void xarp_show(FILE* fp, node_t** head) {
+void xarp_show(FILE* fp) {
 	print_list(fp);
 }
 
-void xarp_res(FILE* fp, node_t** head,unsigned char* request) {
+void xarp_res(FILE* fp,unsigned char* request) {
 	unsigned int ip_address = (request[4] << 24) | (request[3] << 16) | (request[2] << 8) | (request[1]);
 	node_t* found_node = find_node_by_ip_address(ip_address);
 
@@ -228,7 +228,7 @@ void xarp_res(FILE* fp, node_t** head,unsigned char* request) {
 
 }
 
-void xarp_add(FILE* fp, node_t** head, unsigned char* request) {
+void xarp_add(FILE* fp, unsigned char* request) {
 	unsigned int ip_address = (request[4] << 24) | (request[3] << 16) | (request[2] << 8) | (request[1]);
 	unsigned char eth_address[6];
 	memcpy(eth_address, request+1+4, 6); // 1B for opcode, 4B for ip address, 6B for eth_address
@@ -247,7 +247,7 @@ void xarp_add(FILE* fp, node_t** head, unsigned char* request) {
 	fprintf(fp, "Successfull add.\n");
 }
 
-void xarp_del(FILE* fp, node_t** head, unsigned char* request) {
+void xarp_del(FILE* fp, unsigned char* request) {
 	unsigned int ip_address = (request[4] << 24) | (request[3] << 16) | (request[2] << 8) | (request[1]);
 	if(delete_node_by_ip_address(ip_address) == 1)
 		fprintf(fp, "Node deleted succesfully.\n");
@@ -273,26 +273,26 @@ void xifconfig_mtu(unsigned char* request) {
 	update_mtu(ifname);
 }
 
-void daemon_handle_request(unsigned char* request, int sockfd, node_t** head, unsigned int qt_ifaces){
+void daemon_handle_request(unsigned char* request, int sockfd, unsigned int qt_ifaces){
 	int opcode = request[0] - '0';
 	FILE * fp = fdopen(sockfd, "w");
 
 	switch(opcode){
 
 		case XARP_SHOW: //DONE
-			xarp_show(fp, head);
+			xarp_show(fp);
 			break;
 
 		case XARP_RES:
-			xarp_res(fp, head, request);
+			xarp_res(fp, request);
 			break;
 
 		case XARP_ADD: //DONE
-			xarp_add(fp, head, request);
+			xarp_add(fp, request);
 			break;
 
 		case XARP_DEL: //DONE
-			xarp_del(fp, head, request);
+			xarp_del(fp, request);
 			break;
 
 		case XARP_TTL: //DONE
@@ -320,7 +320,7 @@ void daemon_handle_request(unsigned char* request, int sockfd, node_t** head, un
 int main(int argc, char** argv) {
   int i, sockfd;
 
-  initialize_head();
+  initialize_arp_head();
 
   if (argc < 2)
 		print_usage();
@@ -342,9 +342,6 @@ int main(int argc, char** argv) {
 		// print_iface_info(sockfd,  i); // passar o file pointer se quiser usar
 	}
 
-	node_t* head = NULL;
-	g_head = head;
-
 	// aux program listener
 	int connfd;
 	unsigned char buffer[BUFFSIZE];
@@ -360,8 +357,7 @@ int main(int argc, char** argv) {
 	while(1) {
 		connfd = my_accept(listen_sockfd, (struct sockaddr*) &cli_addr);
 		my_recv(connfd, buffer, sizeof(buffer));
-		daemon_handle_request(buffer, connfd, &head, argc-1);
-		g_head = head;
+		daemon_handle_request(buffer, connfd, argc-1);
 	}
 
 	for(i = 0; i < argc-1; i++){

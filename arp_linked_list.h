@@ -14,7 +14,7 @@
     struct node* next;
   } node_t;
 
-  extern node_t* g_head;
+  extern node_t* arp_head;
 
   node_t* add_node(unsigned int ip_address, unsigned char eth_address[6], int ttl);
   int delete_node_by_ip_address(unsigned int del_ip_addr);
@@ -22,5 +22,5 @@
   int list_size();
   void get_eth_addr_as_6_bytes_from_string(unsigned char dest_array[6], char* src_str);
   node_t* find_node_by_ip_address(unsigned int desired_ip_addr);
-  void initialize_head();
+  void initialize_arp_head();
 #endif
