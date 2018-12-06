@@ -19,7 +19,7 @@
 #include <semaphore.h>
 #include "my_socket.h"
 #include "arp_protocol.h"
-#include "linked_list.h"
+#include "arp_linked_list.h"
 #include "misc.h"
 #include "ip_linked_list.h"
 
@@ -123,7 +123,7 @@ void handle_packet(unsigned char* packet, int len) {
 			mac_address[i] = (unsigned char) arphdr->sender_mac[i];
   	}
 
-		node_t* new_node = add_node(&g_head, ip_address, mac_address, global_ttl);
+		node_t* new_node = add_node(ip_address, mac_address, global_ttl);
 		printf("(%d.%d.%d.%d, %2x:%2x:%2x:%2x:%2x:%2x, %d)",
 		arphdr->sender_ip[0], arphdr->sender_ip[1],
 		arphdr->sender_ip[2], arphdr->sender_ip[3],
@@ -183,7 +183,7 @@ void * decrease_ttl_every_sec(void* arg){
 			if(current->ttl != -1)
 				current->ttl -= 1;
 			if(current->ttl == 0)
-				delete_node_by_ip_address(&g_head, current->ip_address);
+				delete_node_by_ip_address(current->ip_address);
 			current = current->next;
 		}
 		current = g_head;
@@ -192,12 +192,12 @@ void * decrease_ttl_every_sec(void* arg){
 }
 
 void xarp_show(FILE* fp, node_t** head) {
-	print_list(*head, fp);
+	print_list(fp);
 }
 
 void xarp_res(FILE* fp, node_t** head,unsigned char* request) {
 	unsigned int ip_address = (request[4] << 24) | (request[3] << 16) | (request[2] << 8) | (request[1]);
-	node_t* found_node = find_node_by_ip_address(*head, ip_address);
+	node_t* found_node = find_node_by_ip_address(ip_address);
 
 	if(found_node != NULL){
 		fprintf(fp, "(%d.%d.%d.%d, %02x:%02x:%02x:%02x:%02x:%02x, %u)",
@@ -232,11 +232,11 @@ void xarp_add(FILE* fp, node_t** head, unsigned char* request) {
 	unsigned char eth_address[6];
 	memcpy(eth_address, request+1+4, 6); // 1B for opcode, 4B for ip address, 6B for eth_address
 	int ttl = (request[14] << 24) | (request[13] << 16) | (request[12] << 8) | (request[11]);
-	node_t* found_node = find_node_by_ip_address(*head, ip_address);
+	node_t* found_node = find_node_by_ip_address(ip_address);
 
 	if(found_node == NULL){
 		fprintf(fp, "Node not found, adding new node\n");
-		add_node(head, ip_address, eth_address, ttl);
+		add_node(ip_address, eth_address, ttl);
 	} else {
 		fprintf(fp, "Node found, modifying node\n");
 		found_node->ip_address = ip_address;
@@ -248,7 +248,7 @@ void xarp_add(FILE* fp, node_t** head, unsigned char* request) {
 
 void xarp_del(FILE* fp, node_t** head, unsigned char* request) {
 	unsigned int ip_address = (request[4] << 24) | (request[3] << 16) | (request[2] << 8) | (request[1]);
-	if(delete_node_by_ip_address(head, ip_address) == 1)
+	if(delete_node_by_ip_address(ip_address) == 1)
 		fprintf(fp, "Node deleted succesfully.\n");
 	else
 		fprintf(fp, "Couldn't delete node.\n");
@@ -318,6 +318,8 @@ void daemon_handle_request(unsigned char* request, int sockfd, node_t** head, un
 
 int main(int argc, char** argv) {
   int i, sockfd;
+
+  initialize_head();
 
   if (argc < 2)
 		print_usage();
