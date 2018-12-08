@@ -112,14 +112,15 @@ int main(int argc, char** argv) {
   int bytes_received;
   int total_bytes_received = 0;
   memset(buffer, 0, sizeof(buffer));
-  do{
+  do {
       bytes_received = recv(sockfd, buffer+total_bytes_received, BUFFSIZE-total_bytes_received, 0);
+      printf("Receiving %d bytes\n", bytes_received); // DEBUG
       if(bytes_received < 0) {
     		fprintf(stderr, "ERROR: %s\n", strerror(errno));
     		exit(1);
     	}
 			total_bytes_received += bytes_received;
-	}while(bytes_received > 0);
+	} while(bytes_received > 0);
 
 
 

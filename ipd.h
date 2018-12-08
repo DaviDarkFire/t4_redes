@@ -60,5 +60,4 @@ void print_iface_info(int sockfd, FILE* fp, unsigned int iface_index);
 unsigned int get_iface_index(char* iface_name);
 void daemon_handle_request(unsigned char* request, int sockfd, unsigned int qt_ifaces);
 
-
 #endif
