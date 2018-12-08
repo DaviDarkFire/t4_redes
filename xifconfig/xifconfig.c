@@ -41,11 +41,12 @@ void configure_ip_mode(char* iface, char* ip_addr, char* netmask){
 
 unsigned char* build_xifconfig_info_message(){
   unsigned char* message;
-  char opcode[1];
+  // char opcode[1];
 
   message = malloc(sizeof(unsigned char)*1); //
 
-  sprintf(opcode, "%d", XIFCONFIG_INFO);
+  // sprintf(opcode, "%d", XIFCONFIG_INFO);
+  message[0] = XIFCONFIG_INFO;
   memcpy(message, opcode, sizeof(char)); // opcode
   return message;
 }
@@ -53,10 +54,11 @@ unsigned char* build_xifconfig_info_message(){
 // xifconfig <interface> <IP address> <IP Netmask>
 unsigned char* build_xifconfig_ip_message(char** args){
   unsigned char* message;
-  char opcode[1];
+  // char opcode[1];
   int ifname_len = (int) strlen(args[1]);
   message = malloc(sizeof(unsigned char)*(1+ifname_len+4+4));
-  sprintf(opcode, "%d", XIFCONFIG_IP);
+  // sprintf(opcode, "%d", XIFCONFIG_IP);
+  message[0] = XIFCONFIG_IP;
   memcpy(message, opcode, sizeof(char)); // opcode
   memcpy(message+1, args[1], (size_t) ifname_len); // ifname
   return message;
@@ -65,8 +67,9 @@ unsigned char* build_xifconfig_ip_message(char** args){
 unsigned char* build_xifconfig_mtu_message(char** args){
   int ifname_len = (int) strlen(args[1]);
   unsigned char* message = malloc(sizeof(unsigned char)*(1+ifname_len));
-  char opcode[1];
-  sprintf(opcode, "%d", XIFCONFIG_MTU);
+  // char opcode[1];
+  // sprintf(opcode, "%d", XIFCONFIG_MTU);
+  message[0] = XIFCONFIG_MTU;
   memcpy(message, opcode, sizeof(char));
   memcpy(message+1, args[1], (size_t) ifname_len);
 

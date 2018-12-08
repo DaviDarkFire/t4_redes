@@ -7,10 +7,8 @@
 
 unsigned char* build_xroute_show_message() {
   unsigned char* message;
-  char opcode[1];
   message = malloc(sizeof(char)*1);
-  sprintf(opcode, "%d", XROUTE_SHOW);
-  memcpy(message, opcode, sizeof(char)); // opcode
+  message[0] = XROUTE_SHOW;
   return message;
 }
 
@@ -20,15 +18,13 @@ unsigned char* build_xroute_add_message(char** argv) {
   unsigned char* target_bytes;
   unsigned char* netmask_bytes;
   unsigned char* gateway_bytes;
-  char opcode[1];
 
   message = malloc(sizeof(char)*13); // 1 + 4 + 4 + 4
   target_bytes = get_ip_addr_bytes_from_string(argv[2]);
   netmask_bytes = get_ip_addr_bytes_from_string(argv[3]);
   gateway_bytes = get_ip_addr_bytes_from_string(argv[4]);
 
-  sprintf(opcode, "%d", XROUTE_ADD);
-  memcpy(message, opcode, sizeof(char));
+  message[0] = XROUTE_ADD;
   memcpy(message+1, target_bytes, 4);
   memcpy(message+1+4, netmask_bytes, 4);
   memcpy(message+1+4+4, gateway_bytes, 4);
@@ -45,16 +41,13 @@ unsigned char* build_xroute_del_message(char** argv) {
   unsigned char* target_bytes;
   unsigned char* netmask_bytes;
   unsigned char* gateway_bytes;
-  // char opcode[1];
 
   message = malloc(sizeof(char)*13); // 1 + 4 + 4 + 4
   target_bytes = get_ip_addr_bytes_from_string(argv[2]);
   netmask_bytes = get_ip_addr_bytes_from_string(argv[3]);
   gateway_bytes = get_ip_addr_bytes_from_string(argv[4]);
 
-  // sprintf(opcode, "%d", XROUTE_DEL);
-  // memcpy(message, opcode, sizeof(char));
-  message[0] = XROUTE_SHOW;
+  message[0] = XROUTE_DEL;
   memcpy(message+1, target_bytes, 4);
   memcpy(message+1+4, netmask_bytes, 4);
   memcpy(message+1+4+4, gateway_bytes, 4);

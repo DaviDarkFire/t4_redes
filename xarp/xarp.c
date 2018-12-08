@@ -3,9 +3,10 @@
 // xarp show
 unsigned char* build_xarp_show_message(){
   unsigned char* message;
-  char opcode[1];
+  // char opcode[1];
   message = malloc(sizeof(char)*1);
-  sprintf(opcode, "%d", XARP_SHOW);
+  // sprintf(opcode, "%d", XARP_SHOW);
+  message[0] = XARP_SHOW;
   memcpy(message, opcode, sizeof(char)); // opcode
   return message;
 }
@@ -14,13 +15,14 @@ unsigned char* build_xarp_show_message(){
 unsigned char* build_xarp_res_message(char** args){
   unsigned char* message;
   unsigned char* ip_bytes;
-  char opcode[1];
+  // char opcode[1];
 
   message = malloc(sizeof(unsigned char)*5); // 1 + 4
 
   ip_bytes = get_ip_addr_bytes_from_string(args[2]);
 
-  sprintf(opcode, "%d", XARP_RES);
+  // sprintf(opcode, "%d", XARP_RES);
+  message[0] = XARP_RES;
   memcpy(message, opcode, sizeof(unsigned char)); // opcode
   memcpy(message+1, ip_bytes, 4); // ip address
   return message;
@@ -32,7 +34,7 @@ unsigned char* build_xarp_add_message(char** args){
   unsigned char* ip_bytes;
   unsigned char* ttl_bytes;
   unsigned char* message;
-  char opcode[1];
+  // char opcode[1];
 
   message = malloc(15); // 1 + 4 + 6 + 4
 
@@ -40,7 +42,8 @@ unsigned char* build_xarp_add_message(char** args){
   ip_bytes = get_ip_addr_bytes_from_string(args[2]);
   ttl_bytes = get_ttl_bytes_from_string(args[4]);
 
-  sprintf(opcode, "%d", XARP_ADD);
+  // sprintf(opcode, "%d", XARP_ADD);
+  message[0] = XARP_ADD;
   memcpy(message, opcode, sizeof(char)); // opcode
   memcpy(message+1, ip_bytes, 4); // ip address
   memcpy(message+1+4, mac_bytes, 6); // ethernet address as 6 bytes
@@ -57,12 +60,13 @@ unsigned char* build_xarp_add_message(char** args){
 unsigned char* build_xarp_del_message(char** args){
   unsigned char* message;
   unsigned char* ip_bytes;
-  char opcode[1];
+  // char opcode[1];
 
   message = malloc(5); // 1 + 4
 
   ip_bytes = get_ip_addr_bytes_from_string(args[2]);
-  sprintf(opcode, "%d", XARP_DEL);
+  // sprintf(opcode, "%d", XARP_DEL);
+  message[0] = XARP_DEL;
   memcpy(message, opcode, sizeof(char)); // opcode
   memcpy(message+1, ip_bytes, 4); // ip address
 
@@ -75,11 +79,12 @@ unsigned char* build_xarp_del_message(char** args){
 unsigned char* build_xarp_ttl_message(char* ttl){
   unsigned char* message = malloc(5*sizeof(char));
   unsigned char* ttl_bytes = NULL;
-  char opcode[1];
+  // char opcode[1];
 
   ttl_bytes = get_ttl_bytes_from_string(ttl);
 
-  sprintf(opcode, "%d", XARP_TTL);
+  // sprintf(opcode, "%d", XARP_TTL);
+  message[0] = XARP_TTL;
   memcpy(message, opcode, sizeof(char)); // opcode
   memcpy(message+1, ttl_bytes, 4); // ttl
 

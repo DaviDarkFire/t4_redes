@@ -23,6 +23,8 @@
 #include "misc.h"
 #include "ip_linked_list.h"
 
+extern node_t* arp_head;
+extern ip_entry_t* ip_head;
 
 struct iface my_ifaces[MAX_IFACES];
 
@@ -78,8 +80,7 @@ void iface_pthread_create(pthread_t tid, unsigned int iface_index) {
 	pthread_create(&tid, &attr, read_iface, &my_ifaces[iface_index]);
 }
 
-void* read_iface(void *arg)
-{
+void* read_iface(void *arg){
 	struct iface *ifn = (struct iface*) arg;
 
 	socklen_t	saddr_len;
@@ -95,15 +96,16 @@ void* read_iface(void *arg)
 	}
 
 	while(1) {
-		n = recvfrom(ifn->sockfd, packet_buffer, MAX_PACKET_SIZE, 0, &saddr, &saddr_len);
-		if(n < 0) {
-			print_error();
-			exit(1);
+		if(ifn->up_or_down == UP) {
+			n = recvfrom(ifn->sockfd, packet_buffer, MAX_PACKET_SIZE, 0, &saddr, &saddr_len);
+			if(n < 0) {
+				print_error();
+				exit(1);
+			}
+			ifn->rx_pkts++;
+			ifn->rx_bytes += n;
+			handle_packet(packet_buffer, n);
 		}
-		ifn->rx_pkts++;
-		ifn->rx_bytes += n;
-		handle_packet(packet_buffer, n);
-		// free(arg);
 	}
 }
 
@@ -272,7 +274,21 @@ void xifconfig_mtu(unsigned char* request) {
 	update_mtu(ifname);
 }
 
-void daemon_handle_request(unsigned char* request, int sockfd, node_t** head, unsigned int qt_ifaces){
+void xroute_add(FILE* fp, unsigned char* request) {
+	// dest_ip = ;
+	// gateway = ;
+	// netmask = ;
+	// iface = decidir iface pela netmask ....
+	// ip_entry_t* new_entry = create_ip_entry(dest_ip, gateway, netmask, iface);
+	// add_ip_entry(new_entry);
+}
+
+void xroute_del(FILE* fp, unsigned char* request) {
+	// dest_ip = request[1];
+	// delete_ip_entry(dest_ip);
+}
+
+void daemon_handle_request(unsigned char* request, int sockfd, unsigned int qt_ifaces){
 	// int opcode = request[0] - '0';
 	int opcode = request[0];
 	FILE * fp = fdopen(sockfd, "w");
@@ -311,15 +327,18 @@ void daemon_handle_request(unsigned char* request, int sockfd, node_t** head, un
 			break;
 
 		case XROUTE_SHOW:
-			fprintf(fp, "You've chosen xroute show\n"); // DEBUG
+			printf("You've chosen xroute show\n"); // DEBUG
+			print_ip_table(fp);
 			break;
 
 		case XROUTE_ADD:
-			fprintf(fp, "You've chosen xroute add\n"); // DEBUG
+			printf("You've chosen xroute add\n"); // DEBUG
+			xroute_add(fp, request);
 			break;
 
 		case XROUTE_DEL:
-			fprintf(fp, "You've chosen xroute del\n"); // DEBUG
+			printf("You've chosen xroute del\n"); // DEBUG
+			xroute_del(fp, request);
 			break;
 
 		default:
@@ -369,6 +388,7 @@ int main(int argc, char** argv) {
 	while(1) {
 		connfd = my_accept(listen_sockfd, (struct sockaddr*) &cli_addr);
 		my_recv(connfd, buffer, sizeof(buffer));
+		printf("message received: %s\n", buffer); // DEBUG
 		daemon_handle_request(buffer, connfd, argc-1);
 	}
 

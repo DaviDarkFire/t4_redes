@@ -25,6 +25,7 @@ struct iface {
 	unsigned int	rx_bytes;
 	unsigned int	tx_pkts;
 	unsigned int	tx_bytes;
+	char up_or_down;
 };
 
 struct ip_hdr {
