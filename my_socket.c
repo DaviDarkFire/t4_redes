@@ -41,7 +41,7 @@ int my_recv(int sockfd, unsigned char *buffer, unsigned int buffer_size) {
   return bytes_received;
 }
 
-void load_socket_info(struct sockaddr_in *serv_addr, const char *ip_address, int port)
+void load_server_params(struct sockaddr_in *serv_addr, const char *ip_address, int port)
 {
   memset((char*) serv_addr, 0, sizeof(*serv_addr));
   serv_addr->sin_family = AF_INET;

@@ -114,24 +114,24 @@ void handle_packet(unsigned char* packet, int len) {
 	struct ether_hdr* eth = (struct ether_hdr*) packet;
 
 	if(htons(0x0806) == eth->ether_type) { // ARP
-		int i;
-		arp_hdr *arphdr = (arp_hdr*) (eth + 6 + 6 + 2); // 6B for MAC dst/src, 2B for eth type
-		unsigned int ip_address;
-		unsigned char mac_address[6];
-
-  	for (i=0; i<6; i++) {
-			mac_address[i] = (unsigned char) arphdr->sender_mac[i];
-  	}
-
-		node_t* new_node = add_node(ip_address, mac_address, global_ttl);
-		printf("(%d.%d.%d.%d, %2x:%2x:%2x:%2x:%2x:%2x, %d)",
-		arphdr->sender_ip[0], arphdr->sender_ip[1],
-		arphdr->sender_ip[2], arphdr->sender_ip[3],
-	 	mac_address[0], mac_address[1], mac_address[2],
-		mac_address[3], mac_address[4], mac_address[5],
-		new_node->ttl);
-
-		sem_post(&sem);
+		// int i;
+		// arp_hdr *arphdr = (arp_hdr*) (eth + 6 + 6 + 2); // 6B for MAC dst/src, 2B for eth type
+		// unsigned int ip_address;
+		// unsigned char mac_address[6];
+		//
+  	// for (i=0; i<6; i++) {
+		// 	mac_address[i] = (unsigned char) arphdr->sender_mac[i];
+  	// }
+		//
+		// node_t* new_node = add_node(ip_address, mac_address, global_ttl);
+		// printf("(%d.%d.%d.%d, %2x:%2x:%2x:%2x:%2x:%2x, %d)",
+		// arphdr->sender_ip[0], arphdr->sender_ip[1],
+		// arphdr->sender_ip[2], arphdr->sender_ip[3],
+	 	// mac_address[0], mac_address[1], mac_address[2],
+		// mac_address[3], mac_address[4], mac_address[5],
+		// new_node->ttl);
+		//
+		// sem_post(&sem);
 	} else {
 		if(htons(0x0800) == eth->ether_type) { // IP
 			struct ip_hdr* ip_header = (struct ip_hdr*) (packet+BYTES_UNTIL_BODY);
@@ -273,7 +273,8 @@ void xifconfig_mtu(unsigned char* request) {
 }
 
 void daemon_handle_request(unsigned char* request, int sockfd, node_t** head, unsigned int qt_ifaces){
-	int opcode = request[0] - '0';
+	// int opcode = request[0] - '0';
+	int opcode = request[0];
 	FILE * fp = fdopen(sockfd, "w");
 
 	switch(opcode){
@@ -307,6 +308,18 @@ void daemon_handle_request(unsigned char* request, int sockfd, node_t** head, un
 
 		case XIFCONFIG_MTU: //DONE
 			xifconfig_mtu(request);
+			break;
+
+		case XROUTE_SHOW:
+			fprintf(fp, "You've chosen xroute show\n"); // DEBUG
+			break;
+
+		case XROUTE_ADD:
+			fprintf(fp, "You've chosen xroute add\n"); // DEBUG
+			break;
+
+		case XROUTE_DEL:
+			fprintf(fp, "You've chosen xroute del\n"); // DEBUG
 			break;
 
 		default:
@@ -352,14 +365,14 @@ int main(int argc, char** argv) {
 
 	int listen_sockfd = create_socket(AF_INET, SOCK_STREAM, 0);
 
-	load_socket_info(&serv_addr, LOOPBACK_IP, PORT);
+	load_server_params(&serv_addr, DEFAULT_IP, PORT);
 	my_bind(listen_sockfd, (struct sockaddr*) &serv_addr);
 	my_listen(listen_sockfd, LISTEN_ENQ);
 
 	while(1) {
 		connfd = my_accept(listen_sockfd, (struct sockaddr*) &cli_addr);
 		my_recv(connfd, buffer, sizeof(buffer));
-		printf("%s", buffer);// DEBUG
+		printf("message received: %s\n", buffer);// DEBUG
 		daemon_handle_request(buffer, connfd, &head, argc-1);
 		g_head = head;
 	}

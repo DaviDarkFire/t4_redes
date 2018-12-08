@@ -11,10 +11,11 @@
   #define BUFFSIZE 1024
   #define MAX_IFNAME_LEN	6
   #define LISTEN_ENQ 5
-  #define LOOPBACK_IP "127.0.0.1"
+  #define PORT 5050
+  #define DEFAULT_IP "127.0.0.1"
 
   #define XARP_SHOW 0
-  #define XARP_RES 1
+  #define XARP_RES 1 // TODO: fazer opcode ser bytes e não
   #define XARP_ADD 2
   #define XARP_DEL 3
   #define XARP_TTL 4
@@ -23,5 +24,5 @@
   #define XIFCONFIG_MTU 7
   #define XROUTE_SHOW 8
   #define XROUTE_ADD 9
-  #define XROUTE_DEL 10
+  #define XROUTE_DEL 10 //
 #endif
