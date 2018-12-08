@@ -41,7 +41,7 @@ int my_recv(int sockfd, unsigned char *buffer, unsigned int buffer_size) {
   return bytes_received;
 }
 
-void load_socket_info(struct sockaddr_in *serv_addr, const char *ip_address, int port)
+void load_server_params(struct sockaddr_in *serv_addr, const char *ip_address, int port)
 {
   memset((char*) serv_addr, 0, sizeof(*serv_addr));
   serv_addr->sin_family = AF_INET;
@@ -65,6 +65,24 @@ void bind_iface_name(int sockfd, char* iface_name) {
 		close(sockfd);
 		exit(1);
     }
+}
+
+void my_send(int sockfd, char *message, unsigned int message_len) {
+  int bytes_sent = 0;
+  do {
+      bytes_sent += send(sockfd, message+bytes_sent, message_len - bytes_sent, 0);
+      if (bytes_sent < 0) {
+        print_error();
+        exit(1);
+      }
+  } while (bytes_sent < message_len);
+}
+
+void my_connect(int sockfd, struct sockaddr_in* serv_addr) {
+  if(connect(sockfd, (struct sockaddr*) serv_addr, sizeof(*serv_addr)) < 0) {
+		fprintf(stderr, "ERROR: %s\n", strerror(errno));
+		exit(1);
+	}
 }
 
 void print_error(){

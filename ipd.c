@@ -114,7 +114,6 @@ void handle_packet(unsigned char* packet, int len) {
 	struct ether_hdr* eth = (struct ether_hdr*) packet;
 
 	if(htons(0x0806) == eth->ether_type) { // ARP
-		// TODO: xarp res que recebe pacote ARP
 		// int i;
 		// arp_hdr *arphdr = (arp_hdr*) (eth + 6 + 6 + 2); // 6B for MAC dst/src, 2B for eth type
 		// unsigned int ip_address;
@@ -201,7 +200,7 @@ void xarp_res(FILE* fp,unsigned char* request) {
 	node_t* found_node = find_node_by_ip_address(ip_address);
 
 	if(found_node != NULL){
-		fprintf(fp, "(%d.%d.%d.%d, %02x:%02x:%02x:%02x:%02x:%02x AOBAAAAA, %u)",
+		fprintf(fp, "(%d.%d.%d.%d, %02x:%02x:%02x:%02x:%02x:%02x, %u)",
 		request[4], request[3], request[2], request[1],
 		found_node->eth_address[0], found_node->eth_address[1],
 		found_node->eth_address[2], found_node->eth_address[3],
@@ -273,8 +272,9 @@ void xifconfig_mtu(unsigned char* request) {
 	update_mtu(ifname);
 }
 
-void daemon_handle_request(unsigned char* request, int sockfd, unsigned int qt_ifaces){
-	int opcode = request[0] - '0';
+void daemon_handle_request(unsigned char* request, int sockfd, node_t** head, unsigned int qt_ifaces){
+	// int opcode = request[0] - '0';
+	int opcode = request[0];
 	FILE * fp = fdopen(sockfd, "w");
 
 	switch(opcode){
@@ -308,6 +308,18 @@ void daemon_handle_request(unsigned char* request, int sockfd, unsigned int qt_i
 
 		case XIFCONFIG_MTU: //DONE
 			xifconfig_mtu(request);
+			break;
+
+		case XROUTE_SHOW:
+			fprintf(fp, "You've chosen xroute show\n"); // DEBUG
+			break;
+
+		case XROUTE_ADD:
+			fprintf(fp, "You've chosen xroute add\n"); // DEBUG
+			break;
+
+		case XROUTE_DEL:
+			fprintf(fp, "You've chosen xroute del\n"); // DEBUG
 			break;
 
 		default:
@@ -350,7 +362,7 @@ int main(int argc, char** argv) {
 
 	int listen_sockfd = create_socket(AF_INET, SOCK_STREAM, 0);
 
-	load_socket_info(&serv_addr, LOOPBACK_IP, PORT);
+	load_server_params(&serv_addr, DEFAULT_IP, PORT);
 	my_bind(listen_sockfd, (struct sockaddr*) &serv_addr);
 	my_listen(listen_sockfd, LISTEN_ENQ);
 

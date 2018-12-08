@@ -16,9 +16,6 @@
 	#include <arpa/inet.h>
 	#include "arp_linked_list.h"
 
-	#define PORT 5050
-	#define DEFAULT_IP "127.0.0.1" 
-
 	unsigned char* get_ip_addr_bytes_from_string(char* dotted_dec_ip);
 	char* get_ip_address_as_dotted_dec(char* ifname);
 	char* get_bcast_address_as_dotted_dec(char* ifname);
