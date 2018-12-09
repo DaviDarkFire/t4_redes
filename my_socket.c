@@ -5,6 +5,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+// #include "global_defines.h"
 #include "my_socket.h"
 
 void my_bind(int sockfd, struct sockaddr *address) {
@@ -46,7 +47,7 @@ void load_server_params(struct sockaddr_in *serv_addr, const char *ip_address, i
   memset((char*) serv_addr, 0, sizeof(*serv_addr));
   serv_addr->sin_family = AF_INET;
   serv_addr->sin_addr.s_addr = inet_addr(ip_address);
-  serv_addr->sin_port = port;
+  serv_addr->sin_port = port; // TODO: coloquei htons pra ver se continua conectando normal
 }
 
 int create_socket(int domain, int type, int protocol) {

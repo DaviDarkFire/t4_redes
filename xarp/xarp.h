@@ -6,7 +6,7 @@
   #include <stdlib.h>
   #include "../misc.h"
 
-  #define BUFFSIZE 65536
+  // #define BUFFSIZE 65536
   #define XARP_SHOW 0
   #define XARP_RES 1
   #define XARP_ADD 2

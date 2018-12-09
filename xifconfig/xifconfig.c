@@ -1,4 +1,7 @@
 #include "xifconfig.h"
+#include "../global_defines.h"
+#include "../misc.h"
+#include "../my_socket.h"
 
 unsigned int decide_mode(int argc, char** argv){
   if (argc == 1)
@@ -41,25 +44,19 @@ void configure_ip_mode(char* iface, char* ip_addr, char* netmask){
 
 unsigned char* build_xifconfig_info_message(){
   unsigned char* message;
-  // char opcode[1];
 
   message = malloc(sizeof(unsigned char)*1); //
-
-  // sprintf(opcode, "%d", XIFCONFIG_INFO);
   message[0] = XIFCONFIG_INFO;
-  memcpy(message, opcode, sizeof(char)); // opcode
   return message;
 }
 
 // xifconfig <interface> <IP address> <IP Netmask>
 unsigned char* build_xifconfig_ip_message(char** args){
   unsigned char* message;
-  // char opcode[1];
+
   int ifname_len = (int) strlen(args[1]);
   message = malloc(sizeof(unsigned char)*(1+ifname_len+4+4));
-  // sprintf(opcode, "%d", XIFCONFIG_IP);
   message[0] = XIFCONFIG_IP;
-  memcpy(message, opcode, sizeof(char)); // opcode
   memcpy(message+1, args[1], (size_t) ifname_len); // ifname
   return message;
 }
@@ -67,10 +64,7 @@ unsigned char* build_xifconfig_ip_message(char** args){
 unsigned char* build_xifconfig_mtu_message(char** args){
   int ifname_len = (int) strlen(args[1]);
   unsigned char* message = malloc(sizeof(unsigned char)*(1+ifname_len));
-  // char opcode[1];
-  // sprintf(opcode, "%d", XIFCONFIG_MTU);
   message[0] = XIFCONFIG_MTU;
-  memcpy(message, opcode, sizeof(char));
   memcpy(message+1, args[1], (size_t) ifname_len);
 
   return message;
@@ -107,33 +101,14 @@ int main(int argc, char** argv){
 	unsigned char buffer[BUFFSIZE];
 	struct sockaddr_in serv_addr;
 
-  sprintf(buffer, "%s", message);
+  sprintf((char*)buffer, "%s", message);
 
-	sockfd = socket(AF_INET, SOCK_STREAM, 0);
-
-	if(sockfd < 0) {
-		fprintf(stderr, "ERROR: %s\n", strerror(errno));
-		exit(1);
-	}
-
-	memset((char*) &serv_addr, 0, sizeof(serv_addr));
-
-	serv_addr.sin_family = AF_INET;
-	serv_addr.sin_addr.s_addr = inet_addr(DEFAULT_IP);
-	serv_addr.sin_port = htons(PORT);
-
-	if(connect(sockfd, (struct sockaddr*) &serv_addr, sizeof(serv_addr)) < 0) {
-		fprintf(stderr, "ERROR: %s\n", strerror(errno));
-		exit(1);
-	}
-
-	if(send(sockfd, buffer, strlen(buffer), 0) < 0) {
-		fprintf(stderr, "ERROR: %s\n", strerror(errno));
-		exit(1);
-	}
+  sockfd = create_socket(AF_INET, SOCK_STREAM, 0);
+  load_server_params(&serv_addr, DEFAULT_IP, PORT);
+  my_connect(sockfd, &serv_addr);
+  my_send(sockfd, (char*) buffer, sizeof(buffer));
 
 	memset(buffer, 0, sizeof(buffer));
-
   total_bytes_received = 0;
   do{
       bytes_received = recv(sockfd, buffer+total_bytes_received, BUFFSIZE-total_bytes_received, 0);

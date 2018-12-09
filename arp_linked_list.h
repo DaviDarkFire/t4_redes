@@ -10,7 +10,7 @@
   typedef struct node{
     unsigned int ip_address;
     unsigned char eth_address[6];
-    unsigned int ttl;
+    int ttl;
     struct node* next;
   } node_t;
 

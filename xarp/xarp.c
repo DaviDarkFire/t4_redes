@@ -1,13 +1,14 @@
 #include "xarp.h"
+#include "../global_defines.h"
+#include "../misc.h"
+#include "../my_socket.h"
+
 
 // xarp show
 unsigned char* build_xarp_show_message(){
   unsigned char* message;
-  // char opcode[1];
   message = malloc(sizeof(char)*1);
-  // sprintf(opcode, "%d", XARP_SHOW);
   message[0] = XARP_SHOW;
-  memcpy(message, opcode, sizeof(char)); // opcode
   return message;
 }
 
@@ -15,15 +16,12 @@ unsigned char* build_xarp_show_message(){
 unsigned char* build_xarp_res_message(char** args){
   unsigned char* message;
   unsigned char* ip_bytes;
-  // char opcode[1];
 
   message = malloc(sizeof(unsigned char)*5); // 1 + 4
 
   ip_bytes = get_ip_addr_bytes_from_string(args[2]);
 
-  // sprintf(opcode, "%d", XARP_RES);
   message[0] = XARP_RES;
-  memcpy(message, opcode, sizeof(unsigned char)); // opcode
   memcpy(message+1, ip_bytes, 4); // ip address
   return message;
 }
@@ -34,7 +32,6 @@ unsigned char* build_xarp_add_message(char** args){
   unsigned char* ip_bytes;
   unsigned char* ttl_bytes;
   unsigned char* message;
-  // char opcode[1];
 
   message = malloc(15); // 1 + 4 + 6 + 4
 
@@ -42,9 +39,7 @@ unsigned char* build_xarp_add_message(char** args){
   ip_bytes = get_ip_addr_bytes_from_string(args[2]);
   ttl_bytes = get_ttl_bytes_from_string(args[4]);
 
-  // sprintf(opcode, "%d", XARP_ADD);
   message[0] = XARP_ADD;
-  memcpy(message, opcode, sizeof(char)); // opcode
   memcpy(message+1, ip_bytes, 4); // ip address
   memcpy(message+1+4, mac_bytes, 6); // ethernet address as 6 bytes
   memcpy(message+1+4+6, ttl_bytes, 4); //ttl
@@ -60,14 +55,11 @@ unsigned char* build_xarp_add_message(char** args){
 unsigned char* build_xarp_del_message(char** args){
   unsigned char* message;
   unsigned char* ip_bytes;
-  // char opcode[1];
 
   message = malloc(5); // 1 + 4
 
   ip_bytes = get_ip_addr_bytes_from_string(args[2]);
-  // sprintf(opcode, "%d", XARP_DEL);
   message[0] = XARP_DEL;
-  memcpy(message, opcode, sizeof(char)); // opcode
   memcpy(message+1, ip_bytes, 4); // ip address
 
   free(ip_bytes);
@@ -79,13 +71,10 @@ unsigned char* build_xarp_del_message(char** args){
 unsigned char* build_xarp_ttl_message(char* ttl){
   unsigned char* message = malloc(5*sizeof(char));
   unsigned char* ttl_bytes = NULL;
-  // char opcode[1];
 
   ttl_bytes = get_ttl_bytes_from_string(ttl);
 
-  // sprintf(opcode, "%d", XARP_TTL);
   message[0] = XARP_TTL;
-  memcpy(message, opcode, sizeof(char)); // opcode
   memcpy(message+1, ttl_bytes, 4); // ttl
 
   free(ttl_bytes);
@@ -126,33 +115,15 @@ int main(int argc, char** argv){
 	unsigned char buffer[BUFFSIZE];
 	struct sockaddr_in serv_addr;
 
-  sprintf(buffer, "%s", message);
-
-	sockfd = socket(AF_INET, SOCK_STREAM, 0);
-
-	if(sockfd < 0) {
-		fprintf(stderr, "ERROR: %s\n", strerror(errno));
-		exit(1);
-	}
+  sprintf((char*)buffer, "%s", message);
 
 	memset((char*) &serv_addr, 0, sizeof(serv_addr));
 
-	serv_addr.sin_family = AF_INET;
-	serv_addr.sin_addr.s_addr = inet_addr(DEFAULT_IP);
-  // serv_addr.sin_addr.s_addr = DEFAULT_IP;
-	serv_addr.sin_port = htons(PORT);
-  // serv_addr.sin_port = PORT;
+  sockfd = create_socket(AF_INET, SOCK_STREAM, 0);
+  load_server_params(&serv_addr, DEFAULT_IP, PORT);
+  my_connect(sockfd, &serv_addr);
 
-	if(connect(sockfd, (struct sockaddr*) &serv_addr, sizeof(serv_addr)) < 0) {
-    printf("pipoco\n");
-		fprintf(stderr, "ERROR: %s\n", strerror(errno));
-		exit(1);
-	}
-
-	if(send(sockfd, buffer, strlen(buffer), 0) < 0) {
-		fprintf(stderr, "ERROR: %s\n", strerror(errno));
-		exit(1);
-	}
+  my_send(sockfd, (char*) buffer, sizeof(buffer));
 
 	memset(buffer, 0, sizeof(buffer));
 

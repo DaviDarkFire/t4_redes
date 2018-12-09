@@ -209,8 +209,8 @@ void xarp_res(FILE* fp,unsigned char* request) {
 		found_node->eth_address[4], found_node->eth_address[5],
 		found_node->ttl);
 	} else {
-		unsigned char* dd_ip = malloc(sizeof(char)*16);
-		sprintf(dd_ip, "%d.%d.%d.%d", request[4], request[3], request[2], request[1]);
+		 char* dd_ip = malloc(sizeof(char)*16);
+		sprintf((char*)dd_ip, "%d.%d.%d.%d", request[4], request[3], request[2], request[1]);
 		send_arp_request(my_ifaces[0].ifname, dd_ip);
 
 		struct timespec ts;
@@ -233,7 +233,7 @@ void xarp_add(FILE* fp, unsigned char* request) {
 	unsigned int ip_address = (request[4] << 24) | (request[3] << 16) | (request[2] << 8) | (request[1]);
 	unsigned char eth_address[6];
 	memcpy(eth_address, request+1+4, 6); // 1B for opcode, 4B for ip address, 6B for eth_address
-	int ttl = (request[14] << 24) | (request[13] << 16) | (request[12] << 8) | (request[11]);
+	int ttl = *(int*) (request+11);
 	node_t* found_node = find_node_by_ip_address(ip_address);
 
 	if(found_node == NULL){
@@ -241,9 +241,9 @@ void xarp_add(FILE* fp, unsigned char* request) {
 		add_node(ip_address, eth_address, ttl);
 	} else {
 		fprintf(fp, "Node found, modifying node\n");
-		found_node->ip_address = ip_address;
+		// found_node->ip_address = ip_address;
 		memcpy(found_node->eth_address, eth_address, 6);
-		found_node->ttl = (ttl == -1 ? global_ttl : ttl);
+		// found_node->ttl = (ttl == -1 ? global_ttl : ttl);
 	}
 	fprintf(fp, "Successfull add.\n");
 }
@@ -270,7 +270,7 @@ void xifconfig_info(FILE* fp, int sockfd, unsigned int qt_ifaces) {
 }
 
 void xifconfig_mtu(unsigned char* request) {
-	char* ifname = request+1;
+	char* ifname = (char*) request+1;
 	update_mtu(ifname);
 }
 
