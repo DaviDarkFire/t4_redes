@@ -25,8 +25,17 @@ ip_entry_t* get_last_ip_entry() {
 }
 
 void add_ip_entry(ip_entry_t* new_entry) {
-  ip_entry_t* last_entry = get_last_ip_entry(ip_head);
-  last_entry->next = new_entry;
+  ip_entry_t* previous = ip_head;
+  ip_entry_t* current = ip_head->next;
+  while(current != NULL) {
+    if((new_entry->dest_ip & new_entry->netmask) > (current->dest_ip & current->netmask)) {
+      new_entry->next = current;
+      break;
+    }
+    previous = current;
+    current = current->next;
+  }
+  previous->next = new_entry;
 }
 
 ip_entry_t* get_previous_entry_of_desired_ip_entry(unsigned int dest_ip) {

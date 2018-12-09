@@ -274,17 +274,34 @@ void xifconfig_mtu(unsigned char* request) {
 	update_mtu(ifname);
 }
 
-void xroute_add(FILE* fp, unsigned char* request) {
-	// dest_ip = ;
-	// gateway = ;
-	// netmask = ;
-	// iface = decidir iface pela netmask ....
+void xroute_add(FILE* fp, unsigned char* request, unsigned int qt_ifaces) {
+	// unsigned int dest_ip, gateway, netmask;
+	// dest_ip = *(unsigned int*) (request+1);
+	// gateway = *(unsigned int*) (request+5);
+	// netmask = *(unsigned int*) (request+9);
+	// iface = get_iface_by_gateway(gateway, qt_ifaces);
+
 	// ip_entry_t* new_entry = create_ip_entry(dest_ip, gateway, netmask, iface);
 	// add_ip_entry(new_entry);
+	// free(iface);
+}
+
+char* get_iface_by_gateway(unsigned int gateway, unsigned int qt_ifaces) {
+	unsigned int largest_prefix = 0;
+	unsigned int chosen_iface_index = 0;
+	char* chosen_iface = malloc(sizeof(char)*MAX_IFNAME_LEN);
+	for(i = 0; i < qt_ifaces; i++) {
+		if(gateway & my_ifaces[i].netmask > largest_prefix) {
+			largest_prefix = gateway & my_ifaces[i].netmask;
+			chosen_iface_index = i;
+		}
+	}
+	strcpy(chosen_iface, my_ifaces[chosen_iface_index]);
+	return chosen_iface;
 }
 
 void xroute_del(FILE* fp, unsigned char* request) {
-	// dest_ip = request[1];
+	// dest_ip = *(unsigned int*) (request+1);
 	// delete_ip_entry(dest_ip);
 }
 
@@ -333,7 +350,7 @@ void daemon_handle_request(unsigned char* request, int sockfd, unsigned int qt_i
 
 		case XROUTE_ADD:
 			printf("You've chosen xroute add\n"); // DEBUG
-			xroute_add(fp, request);
+			xroute_add(fp, request, qt_ifaces);
 			break;
 
 		case XROUTE_DEL:
