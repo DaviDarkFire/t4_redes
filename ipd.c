@@ -289,14 +289,15 @@ void xroute_add(FILE* fp, unsigned char* request, unsigned int qt_ifaces) {
 char* get_iface_by_gateway(unsigned int gateway, unsigned int qt_ifaces) {
 	unsigned int largest_prefix = 0;
 	unsigned int chosen_iface_index = 0;
+	unsigned int i;
 	char* chosen_iface = malloc(sizeof(char)*MAX_IFNAME_LEN);
 	for(i = 0; i < qt_ifaces; i++) {
-		if(gateway & my_ifaces[i].netmask > largest_prefix) {
+		if((gateway & my_ifaces[i].netmask) > largest_prefix) {
 			largest_prefix = gateway & my_ifaces[i].netmask;
 			chosen_iface_index = i;
 		}
 	}
-	strcpy(chosen_iface, my_ifaces[chosen_iface_index]);
+	strcpy(chosen_iface, my_ifaces[chosen_iface_index].ifname);
 	return chosen_iface;
 }
 
