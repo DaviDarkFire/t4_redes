@@ -8,6 +8,8 @@ unsigned int decide_mode(int argc, char** argv){
     return DEFAULT_MODE;
   if(strcmp(argv[2], "mtu") == 0)
     return SET_MTU_MODE;
+  if(strcmp(argv[2], "up") == 0 || strcmp(argv[2], "down") == 0)
+    return UP_OR_DOWN_MODE;
   return CONFIG_IP_MODE;
 }
 
@@ -70,6 +72,20 @@ unsigned char* build_xifconfig_mtu_message(char** args){
   return message;
 }
 
+unsigned char* build_xifconfig_up_or_down_message(char** args){
+  int ifname_len = (int) strlen(args[1]);
+  unsigned char* message = malloc(sizeof(unsigned char)*(2+ifname_len));
+  message[0] = XIFCONFIG_UP_OR_DOWN;
+  if(strcmp(args[2],"up") == 0)
+    message[1] = UP;
+  else
+    message[1] = DOWN;
+
+  memcpy(message+2, args[1], (size_t) ifname_len);
+  printf("Mensagem: %s\n", message);//DEBUG
+  return message;
+
+}
 int main(int argc, char** argv){
   unsigned int mode = decide_mode(argc, argv);
   unsigned char* message;
@@ -88,9 +104,13 @@ int main(int argc, char** argv){
 
     case SET_MTU_MODE:
       message = build_xifconfig_mtu_message(argv);
-      // printf("You chose MTU mode.\n"); //DEBUG
+      printf("You chose MTU mode.\n"); //DEBUG
       set_mtu_mode(argv[1], argv[3]);
     break;
+
+    case UP_OR_DOWN_MODE:
+      message = build_xifconfig_up_or_down_message(argv);
+      break;
 
     default:
       printf("Couldn't understand desired operation.\n");
@@ -119,7 +139,7 @@ int main(int argc, char** argv){
 			total_bytes_received += bytes_received;
 	}while(bytes_received > 0);
 
-	printf("\n%s\n", buffer);
+	printf("\n%s\n", buffer); //DEBUG
 
   free(message);
 

@@ -274,6 +274,27 @@ void xifconfig_mtu(unsigned char* request) {
 	update_mtu(ifname);
 }
 
+void xifconfig_up_or_down(unsigned char* request, unsigned int qt_ifaces) {
+	char* ifname = (char*) request+2;
+	int up_or_down = *(int*) request+1;
+	printf("\nValor recebido: %d", up_or_down);
+	
+	int i;
+	for (i = 0; i < qt_ifaces; i++){
+		if(strcmp(my_ifaces[i].ifname, ifname) == 0)
+			break;
+	}
+
+	// percorrer vetor my_ifaces procurando qual indice tem o mesmo nome de iface que a variavel ifname
+	// acessar my_ifaces na posição encontrada, atribuindo UP/DOWN no campo up_or_down
+	
+	if(up_or_down == UP)
+		my_ifaces[i].up_or_down = UP;
+	else
+		my_ifaces[i].up_or_down = DOWN;
+	
+}
+
 void xroute_add(FILE* fp, unsigned char* request, unsigned int qt_ifaces) {
 	// unsigned int dest_ip, gateway, netmask;
 	// dest_ip = *(unsigned int*) (request+1);
@@ -344,6 +365,11 @@ void daemon_handle_request(unsigned char* request, int sockfd, unsigned int qt_i
 			xifconfig_mtu(request);
 			break;
 
+		case XIFCONFIG_UP_OR_DOWN:
+			xifconfig_up_or_down(request,qt_ifaces);
+			printf("UP or Down: %d",my_ifaces[0].up_or_down); //DEBUG
+			break;
+
 		case XROUTE_SHOW:
 			printf("You've chosen xroute show\n"); // DEBUG
 			print_ip_table(fp);
@@ -406,7 +432,7 @@ int main(int argc, char** argv) {
 	while(1) {
 		connfd = my_accept(listen_sockfd, (struct sockaddr*) &cli_addr);
 		my_recv(connfd, buffer, sizeof(buffer));
-		printf("message received: %s\n", buffer); // DEBUG
+		printf("\nmessage received: %s\n", buffer); // DEBUG
 		daemon_handle_request(buffer, connfd, argc-1);
 	}
 

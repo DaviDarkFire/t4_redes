@@ -24,6 +24,7 @@
   #define XIFCONFIG_INFO 5
   #define XIFCONFIG_IP 6
   #define XIFCONFIG_MTU 7
+  #define XIFCONFIG_UP_OR_DOWN 11
   #define XROUTE_SHOW 8
   #define XROUTE_ADD 9
   #define XROUTE_DEL 10 //

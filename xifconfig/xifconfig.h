@@ -23,6 +23,7 @@
   #define DEFAULT_MODE 0
   #define CONFIG_IP_MODE 1
   #define SET_MTU_MODE 2
+  #define UP_OR_DOWN_MODE 3
 
   #define XIFCONFIG_INFO 5
   #define XIFCONFIG_IP 6
@@ -37,4 +38,5 @@
   unsigned char* build_xifconfig_info_message();
   unsigned char* build_xifconfig_ip_message(char** args);
   unsigned char* build_xifconfig_mtu_message(char** args);
+  unsigned char* build_xifconfig_up_or_down_message(char** args);
 #endif
