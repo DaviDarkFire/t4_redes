@@ -75,14 +75,18 @@ unsigned char* build_xifconfig_mtu_message(char** args){
 unsigned char* build_xifconfig_up_or_down_message(char** args){
   int ifname_len = (int) strlen(args[1]);
   unsigned char* message = malloc(sizeof(unsigned char)*(2+ifname_len));
-  message[0] = XIFCONFIG_UP_OR_DOWN;
-  if(strcmp(args[2],"up") == 0)
+  message[0] = XIFCONFIG_UP_OR_DOWN; 
+
+  if(strcmp(args[2],"up") == 0){
     message[1] = UP;
-  else
+  }
+  else if(strcmp(args[2],"down") == 0){
     message[1] = DOWN;
+  } else {
+    printf("Error, specify up or down.\n");
+  }
 
   memcpy(message+2, args[1], (size_t) ifname_len);
-  printf("Mensagem: %s\n", message);//DEBUG
   return message;
 
 }

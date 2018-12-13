@@ -14,7 +14,7 @@
   #define PORT 5050
   #define DEFAULT_IP "127.0.0.1"
   #define UP 1
-  #define DOWN 0
+  #define DOWN 2
 
   #define XARP_SHOW 0
   #define XARP_RES 1 // TODO: fazer opcode ser bytes e não

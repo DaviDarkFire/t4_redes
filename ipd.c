@@ -276,8 +276,9 @@ void xifconfig_mtu(unsigned char* request) {
 
 void xifconfig_up_or_down(unsigned char* request, unsigned int qt_ifaces) {
 	char* ifname = (char*) request+2;
-	int up_or_down = *(int*) request+1;
-	printf("\nValor recebido: %d", up_or_down);
+	printf("\n");
+	printf("\n");	
+	int up_or_down = (int) request[1];
 	
 	int i;
 	for (i = 0; i < qt_ifaces; i++){
@@ -285,14 +286,7 @@ void xifconfig_up_or_down(unsigned char* request, unsigned int qt_ifaces) {
 			break;
 	}
 
-	// percorrer vetor my_ifaces procurando qual indice tem o mesmo nome de iface que a variavel ifname
-	// acessar my_ifaces na posição encontrada, atribuindo UP/DOWN no campo up_or_down
-	
-	if(up_or_down == UP)
-		my_ifaces[i].up_or_down = UP;
-	else
-		my_ifaces[i].up_or_down = DOWN;
-	
+	my_ifaces[i].up_or_down = up_or_down;
 }
 
 void xroute_add(FILE* fp, unsigned char* request, unsigned int qt_ifaces) {
@@ -328,8 +322,8 @@ void xroute_del(FILE* fp, unsigned char* request) {
 }
 
 void daemon_handle_request(unsigned char* request, int sockfd, unsigned int qt_ifaces){
-	// int opcode = request[0] - '0';
 	int opcode = request[0];
+	printf("opcode na daemon_handle_request: %d\n", opcode); // DEBUG
 	FILE * fp = fdopen(sockfd, "w");
 
 	switch(opcode){
