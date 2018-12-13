@@ -6,6 +6,10 @@
 
 ip_entry_t* ip_head;
 
+void initialize_ip_head(){
+  ip_head = (ip_entry_t*) malloc(sizeof(ip_entry_t));
+}
+
 ip_entry_t* create_ip_entry(unsigned int dest_ip, unsigned int gateway, unsigned int netmask, char* iface) {
   ip_entry_t* new_entry = (ip_entry_t*) malloc(sizeof(ip_entry_t));
   new_entry->dest_ip = dest_ip;
@@ -68,20 +72,21 @@ void print_ip_entry(ip_entry_t* ip_entry, FILE* fp) {
   print_dotted_dec_address(ip_entry->dest_ip, fp);
   print_dotted_dec_address(ip_entry->gateway, fp);
   print_dotted_dec_address(ip_entry->netmask, fp);
-  fprintf(fp, "\t%s\t|", ip_entry->iface);
-  fprintf(fp, "\t%d\n", ip_entry->ttl);
+  fprintf(fp, "  %s  |", ip_entry->iface);
+  fprintf(fp, " %3d \n", ip_entry ->ttl);
 }
 
 void print_dotted_dec_address(unsigned int address, FILE* fp) {
-  fprintf(fp, "%3u.%3u.%3u.%3u | ", (address & 0xFF000000)>>24, (address & 0x00FF0000) >> 16,
-                            (address & 0x0000FF00) >> 8, address & 0x000000FF);
+  fprintf(fp, "%3u.%3u.%3u.%3u | ", (address & 0xFF000000) >> 24 , (address & 0x00FF0000) >> 16,
+                            (address & 0x0000FF00) >> 8 , address & 0x000000FF);
 }
 
 void print_ip_table(FILE* fp) {
-  fprintf(fp, "Destino\t\t|\t\tGateway\t\t|\t\tMáscara\t\t|\t\tInterface\t\t|\tTTL\n");
-  ip_entry_t* current = ip_head;
-  while(current->next != NULL) {
+  fprintf(fp, "    Destino     |     Gateway     |     Máscara     | Interface | TTL\n");
+  ip_entry_t* current = ip_head->next;
+  while(current != NULL) {
     print_ip_entry(current, fp);
     current = current->next;
   }
+  fprintf(fp, "\n");
 }
