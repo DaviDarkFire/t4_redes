@@ -22,5 +22,6 @@
   void print_dotted_dec_address(unsigned int address, FILE* fp);
   void print_ip_entry(ip_entry_t* ip_entry, FILE* fp);
   void print_ip_table(FILE* fp);
+  void initialize_ip_head();
 
 #endif

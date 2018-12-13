@@ -290,15 +290,15 @@ void xifconfig_up_or_down(unsigned char* request, unsigned int qt_ifaces) {
 }
 
 void xroute_add(FILE* fp, unsigned char* request, unsigned int qt_ifaces) {
-	// unsigned int dest_ip, gateway, netmask;
-	// dest_ip = *(unsigned int*) (request+1);
-	// gateway = *(unsigned int*) (request+5);
-	// netmask = *(unsigned int*) (request+9);
-	// iface = get_iface_by_gateway(gateway, qt_ifaces);
+	unsigned int dest_ip, gateway, netmask;
+	dest_ip = *(unsigned int*) (request+1);
+	netmask = *(unsigned int*) (request+5);
+	gateway = *(unsigned int*) (request+9);
+	char* iface = get_iface_by_gateway(gateway, qt_ifaces);
 
-	// ip_entry_t* new_entry = create_ip_entry(dest_ip, gateway, netmask, iface);
-	// add_ip_entry(new_entry);
-	// free(iface);
+	ip_entry_t* new_entry = create_ip_entry(dest_ip, gateway, netmask, iface);
+	add_ip_entry(new_entry);
+	free(iface);
 }
 
 char* get_iface_by_gateway(unsigned int gateway, unsigned int qt_ifaces) {
@@ -390,6 +390,7 @@ int main(int argc, char** argv) {
   int i, sockfd;
 
   initialize_arp_head();
+	initialize_ip_head();
 
   if (argc < 2)
 		print_usage();
