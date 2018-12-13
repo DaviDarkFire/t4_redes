@@ -122,7 +122,7 @@ int main(int argc, char** argv) {
 			total_bytes_received += bytes_received;
 	} while(bytes_received > 0);
 
-
+  printf("%s", buffer);
 
   return 0;
 }
