@@ -294,8 +294,18 @@ void xroute_add(FILE* fp, unsigned char* request, unsigned int qt_ifaces) {
 	dest_ip = *(unsigned int*) (request+1);
 	netmask = *(unsigned int*) (request+5);
 	gateway = *(unsigned int*) (request+9);
-	char* iface = get_iface_by_gateway(gateway, qt_ifaces);
 
+	printf("dest_ip que chega na xroute_add no ipd:"); // DEBUG
+	print_dotted_dec_address(dest_ip, stdout); // DEBUG
+	printf("\n"); //DEBUG
+	printf("netmask que chega na xroute_add no ipd:"); // DEBUG
+	print_dotted_dec_address(netmask, stdout); // DEBUG
+	printf("\n"); //DEBUG
+	printf("gateway que chega na xroute_add no ipd:"); // DEBUG
+	print_dotted_dec_address(gateway, stdout); // DEBUG
+	printf("\n"); //DEBUG
+
+	char* iface = get_iface_by_gateway(gateway, qt_ifaces);
 	ip_entry_t* new_entry = create_ip_entry(dest_ip, gateway, netmask, iface);
 	add_ip_entry(new_entry);
 	free(iface);

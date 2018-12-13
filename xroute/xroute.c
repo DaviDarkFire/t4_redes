@@ -5,21 +5,23 @@
 #include "../misc.h"
 #include "../my_socket.h"
 
-unsigned char* build_xroute_show_message() {
+unsigned char* build_xroute_show_message(unsigned int* message_size) {
   unsigned char* message;
+  *message_size = 1;
   message = malloc(sizeof(char)*1);
   message[0] = XROUTE_SHOW;
   return message;
 }
 
 // xroute add target netmask gateway
-unsigned char* build_xroute_add_message(char** argv) {
+unsigned char* build_xroute_add_message(char** argv, unsigned int* message_size) {
   unsigned char* message;
   unsigned char* target_bytes;
   unsigned char* netmask_bytes;
   unsigned char* gateway_bytes;
 
   message = malloc(sizeof(char)*13); // 1 + 4 + 4 + 4
+  *message_size = 13;
   target_bytes = get_ip_addr_bytes_from_string(argv[2]);
   netmask_bytes = get_ip_addr_bytes_from_string(argv[3]);
   gateway_bytes = get_ip_addr_bytes_from_string(argv[4]);
@@ -36,13 +38,14 @@ unsigned char* build_xroute_add_message(char** argv) {
   return message;
 }
 
-unsigned char* build_xroute_del_message(char** argv) {
+unsigned char* build_xroute_del_message(char** argv, unsigned int* message_size) {
   unsigned char* message;
   unsigned char* target_bytes;
   unsigned char* netmask_bytes;
   unsigned char* gateway_bytes;
 
   message = malloc(sizeof(char)*13); // 1 + 4 + 4 + 4
+  *message_size = 13;
   target_bytes = get_ip_addr_bytes_from_string(argv[2]);
   netmask_bytes = get_ip_addr_bytes_from_string(argv[3]);
   gateway_bytes = get_ip_addr_bytes_from_string(argv[4]);
@@ -82,6 +85,7 @@ int main(int argc, char** argv) {
   struct sockaddr_in serv_addr;
   int opcode = get_opcode(argv[1]);
   unsigned char* message;
+  unsigned int message_size;
 
   int sockfd = create_socket(AF_INET, SOCK_STREAM, 0);
   load_server_params(&serv_addr, DEFAULT_IP, PORT);
@@ -90,28 +94,28 @@ int main(int argc, char** argv) {
 
   switch(opcode) {
     case XROUTE_SHOW:
-      message = build_xroute_show_message();
+      message = build_xroute_show_message(&message_size);
       break;
 
     case XROUTE_ADD:
-      message = build_xroute_add_message(argv);
+      message = build_xroute_add_message(argv, &message_size);
       break;
 
     case XROUTE_DEL:
-      message = build_xroute_del_message(argv);
+      message = build_xroute_del_message(argv, &message_size);
       break;
   }
 
   char buffer[BUFFSIZE];
-  sprintf(buffer, "%s", message);
+  // sprintf(buffer, "%s", message);
 
-  printf("%s\n", buffer); // DEBUG
+  printf("%s\n", message); // DEBUG
 
-  my_send(sockfd, buffer, sizeof(buffer));
+  my_send(sockfd, (char*)message, message_size);
 
   int bytes_received;
   int total_bytes_received = 0;
-  memset(buffer, 0, sizeof(buffer));
+  memset(buffer, 0, BUFFSIZE);
   do {
       bytes_received = recv(sockfd, buffer+total_bytes_received, BUFFSIZE-total_bytes_received, 0);
       printf("Receiving %d bytes\n", bytes_received); // DEBUG
