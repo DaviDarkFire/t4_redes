@@ -295,16 +295,6 @@ void xroute_add(FILE* fp, unsigned char* request, unsigned int qt_ifaces) {
 	netmask = *(unsigned int*) (request+5);
 	gateway = *(unsigned int*) (request+9);
 
-	printf("dest_ip que chega na xroute_add no ipd:"); // DEBUG
-	print_dotted_dec_address(dest_ip, stdout); // DEBUG
-	printf("\n"); //DEBUG
-	printf("netmask que chega na xroute_add no ipd:"); // DEBUG
-	print_dotted_dec_address(netmask, stdout); // DEBUG
-	printf("\n"); //DEBUG
-	printf("gateway que chega na xroute_add no ipd:"); // DEBUG
-	print_dotted_dec_address(gateway, stdout); // DEBUG
-	printf("\n"); //DEBUG
-
 	char* iface = get_iface_by_gateway(gateway, qt_ifaces);
 	ip_entry_t* new_entry = create_ip_entry(dest_ip, gateway, netmask, iface);
 	add_ip_entry(new_entry);
@@ -327,8 +317,13 @@ char* get_iface_by_gateway(unsigned int gateway, unsigned int qt_ifaces) {
 }
 
 void xroute_del(FILE* fp, unsigned char* request) {
-	// dest_ip = *(unsigned int*) (request+1);
-	// delete_ip_entry(dest_ip);
+	unsigned int dest_ip, netmask, gateway;
+	dest_ip = *(unsigned int*) (request+1);
+	netmask = *(unsigned int*) (request+5);
+	gateway = *(unsigned int*) (request+9);
+	int ret = delete_ip_entry(dest_ip, netmask, gateway);
+	if(ret == 0) fprintf(fp, "IP entry deleted succesfully.\n");
+	else fprintf(fp, "IP entry not found.\n");
 }
 
 void daemon_handle_request(unsigned char* request, int sockfd, unsigned int qt_ifaces){

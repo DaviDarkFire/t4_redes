@@ -18,7 +18,7 @@
   ip_entry_t* get_last_ip_entry();
   void add_ip_entry(ip_entry_t* new_entry);
   ip_entry_t* get_previous_entry_of_desired_ip_entry(unsigned int dest_ip);
-  int delete_ip_entry(unsigned int dest_ip);
+  int delete_ip_entry(unsigned int dest_ip, unsigned int netmask, unsigned int gateway);
   void print_dotted_dec_address(unsigned int address, FILE* fp);
   void print_ip_entry(ip_entry_t* ip_entry, FILE* fp);
   void print_ip_table(FILE* fp);

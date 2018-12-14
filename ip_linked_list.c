@@ -43,27 +43,30 @@ void add_ip_entry(ip_entry_t* new_entry) {
 }
 
 ip_entry_t* get_previous_entry_of_desired_ip_entry(unsigned int dest_ip) {
-  ip_entry_t* current = ip_head;
-  ip_entry_t* previous;
+  ip_entry_t* current = ip_head->next;
+  ip_entry_t* previous = ip_head;
 
-  while(current->next != NULL) {
-    previous = current;
-    current = current->next;
+  while(current != NULL) {
     if(current->dest_ip == dest_ip) {
       return previous;
     }
+    previous = current;
+    current = current->next;
   }
   return NULL;
 }
 
-int delete_ip_entry(unsigned int dest_ip) {
+int delete_ip_entry(unsigned int dest_ip, unsigned int netmask, unsigned int gateway) {
   ip_entry_t* previous_of_deleted_entry = get_previous_entry_of_desired_ip_entry(dest_ip);
+  if(previous_of_deleted_entry == NULL) return -1;
+
   ip_entry_t* deleted_entry = previous_of_deleted_entry->next;
-  if(previous_of_deleted_entry == NULL) {
+  if(deleted_entry->netmask == netmask && deleted_entry->gateway == gateway) {
+    previous_of_deleted_entry->next = deleted_entry->next;
+  } else {
     return -1;
   }
-
-  previous_of_deleted_entry->next = NULL;
+ 
   free(deleted_entry);
   return 0;
 }
