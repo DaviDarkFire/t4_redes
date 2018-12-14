@@ -22,5 +22,8 @@
 	unsigned short	ip_csum;	// Header checksum
 	unsigned int	ip_src;		// Source IP address
 	unsigned int	ip_dst;		// Destination IP address
-  };  
+  };
+
+  int check_ip_version(struct ip_hdr* ip_header);
+  void decrement_datagram_ttl(struct ip_hdr* ip_header);
 #endif
