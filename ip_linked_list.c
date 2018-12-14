@@ -56,6 +56,16 @@ ip_entry_t* get_previous_entry_of_desired_ip_entry(unsigned int dest_ip) {
   return NULL;
 }
 
+ip_entry_t* search_for_ip_entry_hit(unsigned int ip_address) {
+  ip_entry_t* current = ip_head->next;
+  while(current!=NULL) {
+    if(current->netmask & ip_address == current->dest_ip)
+      return current;
+    current = current->next;
+  }
+  return NULL;
+}
+
 int delete_ip_entry(unsigned int dest_ip, unsigned int netmask, unsigned int gateway) {
   ip_entry_t* previous_of_deleted_entry = get_previous_entry_of_desired_ip_entry(dest_ip);
   if(previous_of_deleted_entry == NULL) return -1;
@@ -66,7 +76,7 @@ int delete_ip_entry(unsigned int dest_ip, unsigned int netmask, unsigned int gat
   } else {
     return -1;
   }
- 
+
   free(deleted_entry);
   return 0;
 }

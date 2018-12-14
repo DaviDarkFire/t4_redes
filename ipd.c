@@ -138,7 +138,12 @@ void handle_packet(unsigned char* packet, int len) {
 	} else {
 		if(htons(0x0800) == eth->ether_type) { // IP
 			struct ip_hdr* ip_header = (struct ip_hdr*) (packet+BYTES_UNTIL_BODY);
-
+			// checksum
+			if(check_ip_version(ip_header) == -1) return;
+			if(decrement_datagram_ttl == -1) return;
+			// update checksum
+			ip_entry_t* found_entry = get_ip_entry_by_dest_ip(htons(ip_header->ip_dst)); // TODO: NAO SEI SE A BYTE ORDER TA CERTA AQUI
+			if(found_entry == NULL) return;
 		}
 	}
 }
@@ -278,9 +283,9 @@ void xifconfig_mtu(unsigned char* request) {
 void xifconfig_up_or_down(unsigned char* request, unsigned int qt_ifaces) {
 	char* ifname = (char*) request+2;
 	printf("\n");
-	printf("\n");	
+	printf("\n");
 	int up_or_down = (int) request[1];
-	
+
 	int i;
 	for (i = 0; i < qt_ifaces; i++){
 		if(strcmp(my_ifaces[i].ifname, ifname) == 0)
