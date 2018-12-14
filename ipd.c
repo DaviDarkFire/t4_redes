@@ -1,5 +1,6 @@
 #include "ipd.h"
 #include "global_defines.h"
+#include "ip_protocol.h"
 #include <errno.h>
 #include <stdio.h>
 #include <pthread.h> // pthread_t
