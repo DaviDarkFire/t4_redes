@@ -401,7 +401,7 @@ int main(int argc, char** argv) {
   int i, sockfd;
 
   initialize_arp_head();
-	initialize_ip_head();
+  initialize_ip_head();
 
   if (argc < 2)
 		print_usage();

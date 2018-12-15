@@ -2,6 +2,8 @@
   #define __IP_PROTOCOL__
 	#include "global_defines.h"
 	#include "misc.h"
+	#include "ipd.h"
+	#include "arp_protocol.h"
 
   struct ip_hdr {
 
@@ -26,4 +28,6 @@
 
   int check_ip_version(struct ip_hdr* ip_header);
   void decrement_datagram_ttl(struct ip_hdr* ip_header);
+  int checksum(u_short *buf, int count);
+  unsigned char* get_eth_adress_based_on_ip(unsigned int ip_address);
 #endif
